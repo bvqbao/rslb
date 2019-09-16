@@ -3,7 +3,12 @@
 
 struct epoll_event_handler {
     int fd;
+    /* A callback function to handle an epoll event. */
     void (*handle)(struct epoll_event_handler*, uint32_t);
+    /*
+     * A place to store any data the callback function
+     * needs to do its job.
+     */
     void* closure;
 };
 

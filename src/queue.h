@@ -2,7 +2,7 @@
 #define RSLB_QUEUE_H
 
 struct queue_item {
-    void* contents;
+    void* data;
     struct queue_item* next;
 };
 struct queue_root {

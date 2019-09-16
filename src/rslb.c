@@ -32,7 +32,7 @@ void read_backends_config( lua_State* L, struct queue_root* list) {
     if ((token = strsep(&backend_str, ":")) != NULL)
       strncpy(backend_endpoint->port, token, MAX_PORT_BUFF);
 
-    backend_entry->contents = backend_endpoint;
+    backend_entry->data = backend_endpoint;
     enqueue(list, backend_entry);
 
     free(backend_str);
@@ -73,9 +73,18 @@ int main(int argc, char* argv[])
 
     epoll_init();
 
+    /*
+     * Create a socket listening to incoming connections and
+     * register it to epoll.
+     */
     create_server_socket_handler(server_port_str, backend_list);
 
     rsp_log("Started. Listening on port %s.", server_port_str);
+
+    /*
+     * A never-ending loop: wait for an epoll event on the registred fds and
+     * call the appropriate handler.
+     */
     epoll_do_reactor_loop();
 
     return 0;

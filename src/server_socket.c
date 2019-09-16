@@ -67,19 +67,21 @@ void on_backend_close(void* closure)
     epoll_add_to_free_list(closure);
 }
 
-
-void handle_client_connection(int client_socket_fd,
-                              char* backend_host,
-                              char* backend_port_str)
+/*
+ * This function:
+ *   (1) Register client fd and callback functions
+ *   (2) Create and register backend fd and callback functions
+ */
+void handle_client_connection(int client_socket_fd, struct server_endpoint* endpoint)
 {
     struct epoll_event_handler* client_connection;
     rsp_log("Creating connection object for incoming connection...");
     client_connection = create_connection(client_socket_fd);
 
-    int backend_socket_fd = connect_to_backend(backend_host, backend_port_str);
+    int backend_socket_fd = connect_to_backend(endpoint->address, endpoint->port);
     struct epoll_event_handler* backend_connection;
     rsp_log("Creating connection object for backend connection (%s:%s)...",
-            backend_host, backend_port_str);
+            endpoint->address, endpoint->port);
     backend_connection = create_connection(backend_socket_fd);
 
     struct proxy_data* proxy = malloc(sizeof(struct proxy_data));
@@ -99,7 +101,7 @@ void handle_client_connection(int client_socket_fd,
     backend_closure->on_close_closure = proxy;
 }
 
-
+/* The callback function handling an incoming connection to the load balancer. */
 void handle_server_socket_event(struct epoll_event_handler* self, uint32_t events)
 {
     struct queue_root* backend_list = (struct queue_root*) self->closure;
@@ -121,13 +123,11 @@ void handle_server_socket_event(struct epoll_event_handler* self, uint32_t event
         selected_backend = dequeue(backend_list);
 
         if (selected_backend) {
-            backend_endpoint = (struct server_endpoint*) selected_backend->contents;
+            backend_endpoint = (struct server_endpoint*) selected_backend->data;
 
             enqueue(backend_list, selected_backend);
 
-            handle_client_connection(client_socket_fd,
-                                 backend_endpoint->address,
-                                 backend_endpoint->port);
+            handle_client_connection(client_socket_fd, backend_endpoint);
         } else {
             rsp_log_error("No backend found");
             exit(1);
@@ -196,6 +196,10 @@ struct epoll_event_handler* create_server_socket_handler(char* server_port_str,
     server_socket_fd = create_and_bind(server_port_str);
     make_socket_non_blocking(server_socket_fd);
 
+    /*
+     * Mark that this socket will be used to accept incoming connection
+     * requests using accept.
+     */
     listen(server_socket_fd, MAX_LISTEN_BACKLOG);
 
     struct epoll_event_handler* result = malloc(sizeof(struct epoll_event_handler));

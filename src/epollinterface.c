@@ -65,10 +65,14 @@ void epoll_do_reactor_loop()
     while (1) {
         struct epoll_event_handler* handler;
 
+        /* Wait until events are available on any one of the file descriptors. */
         epoll_wait(epoll_fd, &current_epoll_event, 1, -1);
+
+        /* Call the registered callback function to handle the event. */
         handler = (struct epoll_event_handler*) current_epoll_event.data.ptr;
         handler->handle(handler, current_epoll_event.events);
 
+        /* Free up the resources used for handling the connections. */
         struct free_list_entry* temp;
         while (free_list != NULL) {
             free(free_list->block);
