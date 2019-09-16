@@ -64,6 +64,11 @@ int main(int argc, char* argv[])
 
     lua_close(L);
 
+    /*
+     * A SIGPIPE is sent to a process if it tried to write to a socket
+     * that had been shutdown for writing or isn't connected anymore.
+     * To avoid that the program ends in this case, just ignore this signal.
+     */
     signal(SIGPIPE, SIG_IGN);
 
     epoll_init();
