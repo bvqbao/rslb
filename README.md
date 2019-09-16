@@ -34,7 +34,7 @@ Make sure that the backend addresses are listed in the RSLB configuration file.
 
 To test the load balancer:
 
- * Static documents: http://127.0.0.1:9000/htdocs/hello.html
+ * HTML documents: http://127.0.0.1:9000/htdocs/hello.html
  * Scripts (python): http://127.0.0.1:9000/cgi-bin/test.py
 
 Check the RSLB log output to see that the load balancer balances the loads in a round-robin way.
