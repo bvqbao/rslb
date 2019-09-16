@@ -1,7 +1,7 @@
 A Really Simple Load Balancer
 ---------------------
 
-Require luajit installed on your machine (e.g. sudo apt install libluajit-5.1-dev).
+Require *luajit* installed on your machine (e.g. sudo apt install libluajit-5.1-dev).
 
 ### Run RSLB:
 
@@ -11,21 +11,21 @@ make clean && make
 ./rslb ../config.lua
 ```
 
-### Run mock backends:
+### Run backends:
 
 Open one terminal for each backend/server.
 
 #### Terminal 1:
 
 ```bash
-cd mock-backend
+cd backends
 ./run.sh 127.0.0.1 8081
 ```
 
 #### Terminal 2:
 
 ```bash
-cd mock-backend
+cd backends
 ./run.sh 127.0.0.1 8082
 ```
 ...
