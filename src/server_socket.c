@@ -122,10 +122,12 @@ void handle_server_socket_event(struct epoll_event_handler* self, uint32_t event
 
         if (selected_backend) {
             backend_endpoint = (struct server_endpoint*) selected_backend->contents;
+
+            enqueue(backend_list, selected_backend);
+
             handle_client_connection(client_socket_fd,
                                  backend_endpoint->address,
                                  backend_endpoint->port);
-            enqueue(backend_list, selected_backend);
         } else {
             rsp_log_error("No backend found");
             exit(1);
